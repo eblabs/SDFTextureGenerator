@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 using UnityEngine.UI;
-
+using UnityEngine.Events;
 
 
 #if UNITY_EDITOR
@@ -10,24 +10,21 @@ using UnityEditor;
 
 public class PointsToSDF : MonoBehaviour
 {
-    [NonSerialized]
-    public Texture2D sourceTexture;
-
+    //
     public RenderTexture outputTexture;
-    public Image image;
-
     Simplex.Procedures.MaskToSdfTextureProcedure _procedure;
 
-    internal void PointsToSDFEditor()
+
+    public void PointsToSDFEditor()
     {
         // test
-        sourceTexture = CreateRandomTexture(2048, 2048, 3000);
+        var sourceTexture = CreateRandomTexture(512, 512, 10);
 
         // setup
         _procedure?.Release();
         _procedure = new Simplex.Procedures.MaskToSdfTextureProcedure();
 
-        //
+        // send to compute
         var _sourceTexture = sourceTexture;// null;
         var _sourceValueThreshold = 0.5f; // [SerializeField, Range(0f, 1f)] 
         var _sourceChannel = Simplex.Procedures.MaskToSdfTextureProcedure.TextureScalar.A;
@@ -37,14 +34,9 @@ public class PointsToSDF : MonoBehaviour
         bool _showSource = false;
 
         _procedure.Update(_sourceTexture, _sourceValueThreshold, _sourceChannel, _downSampling, _precision, _addBorders, _showSource);
-        // _sdfTextureEvent.Invoke(_procedure.sdfTexture);
 
+        // blit
         Graphics.Blit(_procedure.sdfTexture, outputTexture);
-
-        //
-        //var text2D = ConvertRenderTextureToTexture2D(_procedure.sdfTexture);
-        //var sprite = Sprite.Create(text2D, new Rect(0, 0, outputTexture.width, outputTexture.height), new Vector2(0.5f, 0.5f));
-        //image.sprite = sprite;
     }
 
     Texture2D CreateRandomTexture(int width, int height, int whitePixelCount)
@@ -73,26 +65,26 @@ public class PointsToSDF : MonoBehaviour
         return texture;
     }
 
-    Texture2D ConvertRenderTextureToTexture2D(RenderTexture rt)
-    {
-        // Create a new Texture2D with the same dimensions as the RenderTexture
-        Texture2D texture2D = new Texture2D(rt.width, rt.height, TextureFormat.RGBAFloat, false);
+    /*
+      Texture2D ConvertRenderTextureToTexture2D(RenderTexture rt)
+      {
+          // Create a new Texture2D with the same dimensions as the RenderTexture
+          Texture2D texture2D = new Texture2D(rt.width, rt.height, TextureFormat.RGBAFloat, false);
 
-        // Set the RenderTexture as the active RenderTexture
-        RenderTexture.active = rt;
+          // Set the RenderTexture as the active RenderTexture
+          RenderTexture.active = rt;
 
-        // Read the pixels from the RenderTexture into the Texture2D
-        texture2D.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+          // Read the pixels from the RenderTexture into the Texture2D
+          texture2D.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
 
+          texture2D.Apply();
 
+          // Reset the active RenderTexture
+          RenderTexture.active = null;
 
-        texture2D.Apply();
-
-        // Reset the active RenderTexture
-        RenderTexture.active = null;
-
-        return texture2D;
-    }
+          return texture2D;
+      }
+      */
 }
 
 
